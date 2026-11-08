@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מערכת שיבוץ תורנויות - אגף מודיעין</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="min-h-screen pb-12">
+
+    <!-- Header -->
+    <header class="glass-panel sticky top-0 z-40 px-4 py-3 mb-6 flex justify-between items-center shadow-lg">
+        <div class="flex items-center space-x-3 space-x-reverse">
+            <div class="w-9 h-9 bg-emerald-600 rounded-lg flex items-center justify-center font-bold text-lg shadow-md shadow-emerald-900/40">🛡️</div>
+            <div>
+                <h1 class="text-lg font-bold leading-tight">אגף מודיעין - שיבוץ תורנויות</h1>
+                <p class="text-xs text-gray-400">מערכת אופטימיזציה חכמה</p>
+            </div>
+        </div>
+        <button onclick="toggleSettingsModal()" class="p-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-gray-300 transition flex items-center gap-1.5 text-xs">
+            <span>⚙️</span> <span>הגדרות API</span>
+        </button>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-4 space-y-6">
+
+        <!-- Attendance & Status Panel -->
+        <section class="glass-panel rounded-xl p-5 shadow-sm">
+            <h2 class="text-sm font-semibold text-emerald-400 mb-4 flex items-center gap-2">
+                <span>👥</span> נוכחות צוות וניקוד קושי מצטבר
+            </h2>
+            <div id="soldiersList" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <!-- Populated dynamically via JS -->
+            </div>
+        </section>
+
+        <!-- Input & Roster Trigger -->
+        <section class="glass-panel rounded-xl p-5 shadow-sm space-y-4">
+            <h2 class="text-sm font-semibold text-emerald-400 flex items-center gap-2">
+                <span>📅</span> טעינת תורנויות ופענוח
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="border border-dashed border-gray-700 rounded-lg p-4 text-center hover:border-emerald-500/50 transition">
+                    <input type="file" id="imageInput" accept="image/*" class="hidden" onchange="handleImageUpload(event)">
+                    <label for="imageInput" class="cursor-pointer block space-y-2">
+                        <div class="text-2xl">📸</div>
+                        <div class="text-xs text-gray-300 font-medium">העלאת תמונת לוח תורנויות</div>
+                        <div class="text-[10px] text-gray-500">פענוח אוטומטי באמצעות Gemini AI</div>
+                    </label>
+                </div>
+
+                <div class="flex flex-col justify-between gap-2">
+                    <button onclick="generateRoster(false)" class="w-full h-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-3 rounded-lg text-sm transition shadow-lg shadow-emerald-950/50 flex items-center justify-center gap-2">
+                        <span>⚡</span> <span>שבץ והשלם תורנויות פתוחות</span>
+                    </button>
+                    <button onclick="generateRoster(true)" class="w-full bg-gray-800 hover:bg-red-900/40 text-gray-400 hover:text-red-300 border border-gray-700 hover:border-red-800 font-normal py-2 rounded-lg text-xs transition flex items-center justify-center gap-1.5">
+                        <span>🔄</span> <span>דרוס הכל ושבץ מחדש</span>
+                    </button>
+                </div>
+            </div>
+
+            <div id="imagePreviewContainer" class="hidden mt-3">
+                <img id="imagePreview" class="max-h-48 rounded-lg border border-gray-700 mx-auto object-contain">
+            </div>
+        </section>
+
+        <!-- Dynamic Shift Roster -->
+        <section class="glass-panel rounded-xl p-5 shadow-sm space-y-4">
+            <div class="flex justify-between items-center">
+                <h2 class="text-sm font-semibold text-emerald-400 flex items-center gap-2">
+                    <span>📋</span> לוח תורנויות שבועי
+                </h2>
+                <button onclick="addManualShift()" class="text-xs bg-gray-800 hover:bg-gray-700 text-emerald-400 px-3 py-1.5 rounded-lg border border-gray-700 transition">
+                    + הוספת תורנות ידנית
+                </button>
+            </div>
+
+            <div id="shiftsContainer" class="space-y-2">
+                <!-- Populated dynamically via JS -->
+            </div>
+        </section>
+
+        <!-- Final WhatsApp Message Output -->
+        <section class="glass-panel rounded-xl p-5 shadow-sm space-y-3">
+            <div class="flex justify-between items-center">
+                <h2 class="text-sm font-semibold text-emerald-400 flex items-center gap-2">
+                    <span>💬</span> הודעת פָּקָשׁ מוכנה ל-WhatsApp
+                </h2>
+                <button onclick="copyPakash()" class="text-xs bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg transition shadow">
+                    📋 העתק הודעה
+                </button>
+            </div>
+            <textarea id="pakashOutput" rows="12" class="w-full bg-gray-900/90 border border-gray-800 rounded-lg p-3 text-xs text-gray-200 font-mono leading-relaxed focus:outline-none" readonly></textarea>
+            
+            <div class="pt-2">
+                <button onclick="approveWeek()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-3 rounded-lg text-sm shadow-md transition flex items-center justify-center gap-2">
+                    <span>✅</span> <span>אישור סופי ("מאושר") ונעילת ניקוד לשבוע הבא</span>
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Deep Calculation Loading Overlay -->
+    <div id="loadingOverlay" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex flex-col items-center justify-center p-4">
+        <div class="glass-panel p-6 rounded-2xl max-w-sm w-full text-center space-y-4 shadow-2xl">
+            <div class="loader-spinner mx-auto"></div>
+            <div>
+                <h3 class="text-base font-bold text-gray-100">מבצע סימולציית אופטימיזציה</h3>
+                <p id="loadingStage" class="text-xs text-emerald-400 mt-1 font-mono">מנתח חוקי מנוחה וניקוד קושי...</p>
+            </div>
+            <div class="w-full bg-gray-800 rounded-full h-1.5 overflow-hidden">
+                <div id="progressBar" class="bg-emerald-500 h-full w-0 transition-all duration-300"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="fixed inset-0 bg-black/70 z-50 hidden flex items-center justify-center p-4">
+        <div class="glass-panel rounded-xl p-5 max-w-md w-full space-y-4">
+            <h3 class="text-sm font-bold text-gray-200">הגדרת Gemini API Key</h3>
+            <p class="text-xs text-gray-400">הזן מפתח API כדי לאפשר זיהוי ופענוח תמונות אוטומטי. מפתח חינמי ניתן להנפקה ב-Google AI Studio.</p>
+            <input type="password" id="apiKeyInput" placeholder="הדבק API Key כאן..." class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-xs text-gray-200 focus:outline-none focus:border-emerald-500">
+            <div class="flex justify-end gap-2 pt-2">
+                <button onclick="toggleSettingsModal()" class="px-3 py-1.5 bg-gray-800 text-gray-300 rounded-lg text-xs">ביטול</button>
+                <button onclick="saveApiKey()" class="px-4 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-medium">שמור מפתח</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
