@@ -30,7 +30,6 @@ function initData() {
         state.weekendDuty[s] = false;
     });
 
-    // Default Roster Template
     state.shifts = [
         { day: "ראשון", type: "ש.ג 00:00", assigned: "עומר", locked: false },
         { day: "ראשון", type: "רס\"ר ערב", assigned: "מוריה", locked: false },
@@ -150,7 +149,7 @@ async function generateRoster(overwriteAll) {
     for (let i = 0; i < stages.length; i++) {
         document.getElementById('loadingStage').innerText = stages[i];
         document.getElementById('progressBar').style.width = `${((i + 1) / stages.length) * 100}%`;
-        await new Promise(r => setTimeout(r, 350));
+        await new Promise(r => setTimeout(r, 250));
     }
 
     if (overwriteAll) {
@@ -209,7 +208,7 @@ async function generateRoster(overwriteAll) {
     switchTab('roster');
 }
 
-// WhatsApp Pakash Generator (Strict Format Match with פק"ש)
+// WhatsApp Pakash Generator (Strict Format Match)
 function updatePakash() {
     let txt = "פק\"ש שבועי אגף המודיעין:\n";
     
@@ -263,56 +262,90 @@ function approveWeek() {
     alert('הניקוד המעודכן ננעל ונשמר בזיכרון המכשיר לשבוע הבא!');
 }
 
-// Image Handling & Gemini AI
+// Image Compressor to prevent Chrome crashes
+function compressImage(file, maxWidth = 1024, quality = 0.75) {
+    return new Promise((resolve, reject) => {
+        const image = new Image();
+        image.src = URL.createObjectURL(file);
+        image.onload = () => {
+            const canvas = document.createElement('canvas');
+            let width = image.width;
+            let height = image.height;
+
+            if (width > maxWidth) {
+                height = Math.round((height * maxWidth) / width);
+                width = maxWidth;
+            }
+
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(image, 0, 0, width, height);
+
+            const base64 = canvas.toDataURL('image/jpeg', quality);
+            URL.revokeObjectURL(image.src);
+            resolve(base64);
+        };
+        image.onerror = (err) => reject(err);
+    });
+}
+
+// Safe Image Handling & Gemini AI Request
 async function handleImageUpload(e) {
     const file = e.target.files[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = async function(evt) {
-        document.getElementById('imagePreview').src = evt.target.result;
+    const apiKey = localStorage.getItem('gemini_api_key');
+    if (!apiKey) {
+        alert('אנא הגדר מפתח API בהגדרות כדי לאפשר פענוח תמונות ב-AI.');
+        return;
+    }
+
+    showLoading(true);
+    document.getElementById('loadingStage').innerText = "מכווץ תמונה ומכין לפענוח...";
+
+    try {
+        const compressedBase64 = await compressImage(file);
+        document.getElementById('imagePreview').src = compressedBase64;
         document.getElementById('imagePreviewContainer').classList.remove('hidden');
 
-        const apiKey = localStorage.getItem('gemini_api_key');
-        if(!apiKey) {
-            alert('אנא הגדר מפתח API בהגדרות כדי לאפשר פענוח תמונות ב-AI.');
-            return;
-        }
+        document.getElementById('loadingStage').innerText = "מפענח תורנויות מול Gemini AI...";
+        const base64Data = compressedBase64.split(',')[1];
 
-        showLoading(true);
-        document.getElementById('loadingStage').innerText = "מפתח תמונה ומפענח תורנויות ב-Gemini AI...";
-        
-        try {
-            const base64Data = evt.target.result.split(',')[1];
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{
-                        parts: [
-                            { text: "Parse this duty table image. Extract only shifts marked for 'מודיעין'. Return ONLY a JSON array of objects with keys: 'day' (ראשון/שני/שלישי/רביעי), 'type' (e.g. ש.ג 08:00, מטבח בוקר, נשקייה)." },
-                            { inline_data: { mime_type: file.type, data: base64Data } }
-                        ]
-                    }]
-                })
-            });
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                contents: [{
+                    parts: [
+                        { text: "Extract ONLY shifts marked for 'מודיעין'. Return ONLY a JSON array of objects with keys 'day' (ראשון/שני/שלישי/רביעי) and 'type' (e.g. ש.ג 08:00, מטבח בוקר, נשקייה)." },
+                        { inline_data: { mime_type: "image/jpeg", data: base64Data } }
+                    ]
+                }]
+            })
+        });
 
-            const data = await response.json();
-            const replyText = data.candidates[0].content.parts[0].text;
-            const jsonMatch = replyText.match(/\[.*\]/s);
-            
-            if (jsonMatch) {
-                const parsedShifts = JSON.parse(jsonMatch[0]);
-                state.shifts = parsedShifts.map(s => ({ ...s, assigned: "", locked: false }));
-                renderShifts();
-            }
-        } catch(err) {
-            alert('שגיאה בפענוח התמונה. ניתן להזין תורנויות ידנית.');
-        } finally {
-            showLoading(false);
+        if (!response.ok) throw new Error('שגיאה בהתקשרות ל-API');
+
+        const data = await response.json();
+        const replyText = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+        const jsonMatch = replyText.match(/\[.*\]/s);
+
+        if (jsonMatch) {
+            const parsedShifts = JSON.parse(jsonMatch[0]);
+            state.shifts = parsedShifts.map(s => ({ ...s, assigned: "", locked: false }));
+            renderShifts();
+            alert('התמונה פוענחה בהצלחה!');
+        } else {
+            alert('לא זוהו תורנויות מודיעין בתמונה. ניתן להוסיף תורנויות ידנית.');
         }
-    };
-    reader.readAsDataURL(file);
+    } catch (err) {
+        console.error(err);
+        alert('התרחשה שגיאה בתהליך הפענוח. נסה שוב או הוסף תורנויות ידנית.');
+    } finally {
+        showLoading(false);
+        e.target.value = ''; // Reset file input
+    }
 }
 
 // Modal Controls
