@@ -5,128 +5,143 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>מערכת שיבוץ תורנויות - אגף מודיעין</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="min-h-screen pb-12">
+<body class="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
 
     <!-- Header -->
-    <header class="glass-panel sticky top-0 z-40 px-4 py-3 mb-6 flex justify-between items-center shadow-lg">
-        <div class="flex items-center space-x-3 space-x-reverse">
-            <div class="w-9 h-9 bg-emerald-600 rounded-lg flex items-center justify-center font-bold text-lg shadow-md shadow-emerald-900/40">🛡️</div>
-            <div>
-                <h1 class="text-lg font-bold leading-tight">אגף מודיעין - שיבוץ תורנויות</h1>
-                <p class="text-xs text-gray-400">מערכת אופטימיזציה חכמה</p>
+    <header class="bg-slate-900 border-b border-slate-800 px-4 py-3 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-3xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-slate-800 border border-slate-700 rounded-md flex items-center justify-center font-bold text-sm text-emerald-400">
+                    מו"ד
+                </div>
+                <div>
+                    <h1 class="text-base font-bold leading-none text-slate-100">שיבוץ תורנויות מודיעין</h1>
+                    <span class="text-[11px] text-slate-400 font-normal">מערכת אופטימיזציה ואיזון עומסים</span>
+                </div>
             </div>
+            <button onclick="toggleSettingsModal()" class="p-2 text-slate-400 hover:text-slate-200 hover:bg-slate-800 rounded-md transition text-xs flex items-center gap-1.5 border border-slate-700">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                <span>הגדרות</span>
+            </button>
         </div>
-        <button onclick="toggleSettingsModal()" class="p-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-gray-300 transition flex items-center gap-1.5 text-xs">
-            <span>⚙️</span> <span>הגדרות API</span>
-        </button>
     </header>
 
-    <main class="max-w-4xl mx-auto px-4 space-y-6">
+    <!-- Navigation Tabs -->
+    <nav class="bg-slate-900/80 border-b border-slate-800 sticky top-[53px] z-20">
+        <div class="max-w-3xl mx-auto flex">
+            <button onclick="switchTab('team')" id="tab-btn-team" class="tab-btn active flex-1 py-3 text-xs font-semibold text-center border-b-2 transition">
+                👥 נוכחות וצוות
+            </button>
+            <button onclick="switchTab('roster')" id="tab-btn-roster" class="tab-btn flex-1 py-3 text-xs font-semibold text-center border-b-2 transition">
+                📋 לוח תורנויות
+            </button>
+            <button onclick="switchTab('pakash')" id="tab-btn-pakash" class="tab-btn flex-1 py-3 text-xs font-semibold text-center border-b-2 transition">
+                💬 פק"ש ל-WhatsApp
+            </button>
+        </div>
+    </nav>
 
-        <!-- Attendance & Status Panel -->
-        <section class="glass-panel rounded-xl p-5 shadow-sm">
-            <h2 class="text-sm font-semibold text-emerald-400 mb-4 flex items-center gap-2">
-                <span>👥</span> נוכחות צוות וניקוד קושי מצטבר
-            </h2>
+    <!-- Main Content Container -->
+    <main class="max-w-3xl mx-auto w-full px-4 py-6 flex-1">
+
+        <!-- TAB 1: TEAM & ATTENDANCE -->
+        <section id="tab-team" class="tab-content space-y-4">
+            <div class="flex justify-between items-center pb-2 border-b border-slate-800">
+                <div>
+                    <h2 class="text-sm font-bold text-slate-200">זמינות חיילי האגף</h2>
+                    <p class="text-xs text-slate-400">סמן ימי נוכחות בבסיס וסגירת שבת</p>
+                </div>
+            </div>
             <div id="soldiersList" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <!-- Populated dynamically via JS -->
+                <!-- Populated via JS -->
             </div>
         </section>
 
-        <!-- Input & Roster Trigger -->
-        <section class="glass-panel rounded-xl p-5 shadow-sm space-y-4">
-            <h2 class="text-sm font-semibold text-emerald-400 flex items-center gap-2">
-                <span>📅</span> טעינת תורנויות ופענוח
-            </h2>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="border border-dashed border-gray-700 rounded-lg p-4 text-center hover:border-emerald-500/50 transition">
+        <!-- TAB 2: ROSTER & GENERATION -->
+        <section id="tab-roster" class="tab-content hidden space-y-5">
+            <!-- Upload Box -->
+            <div class="bg-slate-900 border border-slate-800 rounded-lg p-4 space-y-3">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-xs font-bold text-slate-300">טעינת לוח תורנויות (תמונה / AI)</h2>
+                </div>
+                <div class="flex items-center gap-3">
                     <input type="file" id="imageInput" accept="image/*" class="hidden" onchange="handleImageUpload(event)">
-                    <label for="imageInput" class="cursor-pointer block space-y-2">
-                        <div class="text-2xl">📸</div>
-                        <div class="text-xs text-gray-300 font-medium">העלאת תמונת לוח תורנויות</div>
-                        <div class="text-[10px] text-gray-500">פענוח אוטומטי באמצעות Gemini AI</div>
+                    <label for="imageInput" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 rounded-md py-2.5 px-3 text-center text-xs font-medium cursor-pointer transition">
+                        📷 העלה תמונת לוח תורנויות
                     </label>
+                    <button onclick="generateRoster(false)" class="bg-emerald-600 hover:bg-emerald-500 text-white font-medium px-4 py-2.5 rounded-md text-xs transition shadow-sm">
+                        ⚡ שבץ והשלם
+                    </button>
+                    <button onclick="generateRoster(true)" class="bg-slate-800 hover:bg-red-900/30 text-slate-400 hover:text-red-300 border border-slate-700 px-3 py-2.5 rounded-md text-xs transition">
+                        🔄 דרוס הכל
+                    </button>
                 </div>
-
-                <div class="flex flex-col justify-between gap-2">
-                    <button onclick="generateRoster(false)" class="w-full h-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-3 rounded-lg text-sm transition shadow-lg shadow-emerald-950/50 flex items-center justify-center gap-2">
-                        <span>⚡</span> <span>שבץ והשלם תורנויות פתוחות</span>
-                    </button>
-                    <button onclick="generateRoster(true)" class="w-full bg-gray-800 hover:bg-red-900/40 text-gray-400 hover:text-red-300 border border-gray-700 hover:border-red-800 font-normal py-2 rounded-lg text-xs transition flex items-center justify-center gap-1.5">
-                        <span>🔄</span> <span>דרוס הכל ושבץ מחדש</span>
-                    </button>
+                <div id="imagePreviewContainer" class="hidden pt-2">
+                    <img id="imagePreview" class="max-h-40 rounded border border-slate-700 mx-auto">
                 </div>
             </div>
 
-            <div id="imagePreviewContainer" class="hidden mt-3">
-                <img id="imagePreview" class="max-h-48 rounded-lg border border-gray-700 mx-auto object-contain">
+            <!-- Roster List -->
+            <div class="bg-slate-900 border border-slate-800 rounded-lg p-4 space-y-3">
+                <div class="flex justify-between items-center pb-2 border-b border-slate-800">
+                    <h2 class="text-xs font-bold text-slate-300">משמרות השבוע</h2>
+                    <button onclick="addManualShift()" class="text-[11px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1 rounded border border-slate-700 transition">
+                        + הוסף תורנות
+                    </button>
+                </div>
+                <div id="shiftsContainer" class="space-y-2">
+                    <!-- Populated via JS -->
+                </div>
             </div>
         </section>
 
-        <!-- Dynamic Shift Roster -->
-        <section class="glass-panel rounded-xl p-5 shadow-sm space-y-4">
-            <div class="flex justify-between items-center">
-                <h2 class="text-sm font-semibold text-emerald-400 flex items-center gap-2">
-                    <span>📋</span> לוח תורנויות שבועי
-                </h2>
-                <button onclick="addManualShift()" class="text-xs bg-gray-800 hover:bg-gray-700 text-emerald-400 px-3 py-1.5 rounded-lg border border-gray-700 transition">
-                    + הוספת תורנות ידנית
-                </button>
-            </div>
-
-            <div id="shiftsContainer" class="space-y-2">
-                <!-- Populated dynamically via JS -->
-            </div>
-        </section>
-
-        <!-- Final WhatsApp Message Output -->
-        <section class="glass-panel rounded-xl p-5 shadow-sm space-y-3">
-            <div class="flex justify-between items-center">
-                <h2 class="text-sm font-semibold text-emerald-400 flex items-center gap-2">
-                    <span>💬</span> הודעת פָּקָשׁ מוכנה ל-WhatsApp
-                </h2>
-                <button onclick="copyPakash()" class="text-xs bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg transition shadow">
-                    📋 העתק הודעה
-                </button>
-            </div>
-            <textarea id="pakashOutput" rows="12" class="w-full bg-gray-900/90 border border-gray-800 rounded-lg p-3 text-xs text-gray-200 font-mono leading-relaxed focus:outline-none" readonly></textarea>
-            
-            <div class="pt-2">
-                <button onclick="approveWeek()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-3 rounded-lg text-sm shadow-md transition flex items-center justify-center gap-2">
-                    <span>✅</span> <span>אישור סופי ("מאושר") ונעילת ניקוד לשבוע הבא</span>
-                </button>
+        <!-- TAB 3: PAKASH OUTPUT -->
+        <section id="tab-pakash" class="tab-content hidden space-y-4">
+            <div class="bg-slate-900 border border-slate-800 rounded-lg p-4 space-y-3">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-xs font-bold text-slate-300">הודעת פק"ש מוכנה לשליחה</h2>
+                    <button onclick="copyPakash()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded text-xs font-medium transition flex items-center gap-1">
+                        📋 העתק פק"ש
+                    </button>
+                </div>
+                <textarea id="pakashOutput" rows="12" class="w-full bg-slate-950 border border-slate-800 rounded p-3 text-xs text-slate-200 font-mono leading-relaxed focus:outline-none" readonly></textarea>
+                
+                <div class="pt-2">
+                    <button onclick="approveWeek()" class="w-full bg-slate-800 hover:bg-emerald-700 text-emerald-400 hover:text-white border border-emerald-600/40 font-medium py-3 rounded-md text-xs transition flex items-center justify-center gap-2">
+                        <span>✅</span> <span>נעילת ניקוד ואישור סופי לשבוע הבא</span>
+                    </button>
+                </div>
             </div>
         </section>
 
     </main>
 
-    <!-- Deep Calculation Loading Overlay -->
-    <div id="loadingOverlay" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex flex-col items-center justify-center p-4">
-        <div class="glass-panel p-6 rounded-2xl max-w-sm w-full text-center space-y-4 shadow-2xl">
+    <!-- Loading Modal -->
+    <div id="loadingOverlay" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex flex-col items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-lg max-w-xs w-full text-center space-y-4 shadow-xl">
             <div class="loader-spinner mx-auto"></div>
             <div>
-                <h3 class="text-base font-bold text-gray-100">מבצע סימולציית אופטימיזציה</h3>
-                <p id="loadingStage" class="text-xs text-emerald-400 mt-1 font-mono">מנתח חוקי מנוחה וניקוד קושי...</p>
+                <h3 class="text-xs font-bold text-slate-200">מבצע אופטימיזציה למשמרות</h3>
+                <p id="loadingStage" class="text-[11px] text-emerald-400 mt-1 font-mono">מחשב חוקי מנוחה ופטורים...</p>
             </div>
-            <div class="w-full bg-gray-800 rounded-full h-1.5 overflow-hidden">
+            <div class="w-full bg-slate-800 rounded-full h-1 overflow-hidden">
                 <div id="progressBar" class="bg-emerald-500 h-full w-0 transition-all duration-300"></div>
             </div>
         </div>
     </div>
 
     <!-- Settings Modal -->
-    <div id="settingsModal" class="fixed inset-0 bg-black/70 z-50 hidden flex items-center justify-center p-4">
-        <div class="glass-panel rounded-xl p-5 max-w-md w-full space-y-4">
-            <h3 class="text-sm font-bold text-gray-200">הגדרת Gemini API Key</h3>
-            <p class="text-xs text-gray-400">הזן מפתח API כדי לאפשר זיהוי ופענוח תמונות אוטומטי. מפתח חינמי ניתן להנפקה ב-Google AI Studio.</p>
-            <input type="password" id="apiKeyInput" placeholder="הדבק API Key כאן..." class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-xs text-gray-200 focus:outline-none focus:border-emerald-500">
+    <div id="settingsModal" class="fixed inset-0 bg-slate-950/80 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-lg p-5 max-w-sm w-full space-y-4">
+            <h3 class="text-xs font-bold text-slate-200">הגדרת Gemini API Key</h3>
+            <p class="text-[11px] text-slate-400 leading-relaxed">הזן מפתח API מ-Google AI Studio כדי לאפשר פענוח תמונות אוטומטי. המפתח נשמר בדפדפן בלבד.</p>
+            <input type="password" id="apiKeyInput" placeholder="הדבק מפתח API..." class="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-slate-600">
             <div class="flex justify-end gap-2 pt-2">
-                <button onclick="toggleSettingsModal()" class="px-3 py-1.5 bg-gray-800 text-gray-300 rounded-lg text-xs">ביטול</button>
-                <button onclick="saveApiKey()" class="px-4 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-medium">שמור מפתח</button>
+                <button onclick="toggleSettingsModal()" class="px-3 py-1.5 bg-slate-800 text-slate-300 rounded text-xs">ביטול</button>
+                <button onclick="saveApiKey()" class="px-4 py-1.5 bg-emerald-600 text-white rounded text-xs font-medium">שמור מפתח</button>
             </div>
         </div>
     </div>
