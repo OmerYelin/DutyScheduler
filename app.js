@@ -262,7 +262,7 @@ function approveWeek() {
     alert('הניקוד המעודכן ננעל ונשמר בזיכרון המכשיר לשבוע הבא!');
 }
 
-// Image Compressor to prevent Chrome crashes
+// Image Compressor
 function compressImage(file, maxWidth = 1024, quality = 0.75) {
     return new Promise((resolve, reject) => {
         const image = new Image();
@@ -290,7 +290,7 @@ function compressImage(file, maxWidth = 1024, quality = 0.75) {
     });
 }
 
-// Safe Image Handling & Gemini AI Request
+// Safe Image Handling via Vercel Serverless Function
 async function handleImageUpload(e) {
     const file = e.target.files[0];
     if (!file) return;
@@ -302,7 +302,7 @@ async function handleImageUpload(e) {
     }
 
     showLoading(true);
-    document.getElementById('loadingStage').innerText = "מכווץ תמונה ומכין לפענוח...";
+    document.getElementById('loadingStage').innerText = "מכווץ תמונה ומכין לשליחה...";
 
     try {
         const compressedBase64 = await compressImage(file);
@@ -310,41 +310,31 @@ async function handleImageUpload(e) {
         document.getElementById('imagePreviewContainer').classList.remove('hidden');
 
         document.getElementById('loadingStage').innerText = "מפענח תורנויות מול Gemini AI...";
-        const base64Data = compressedBase64.split(',')[1];
 
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+        const response = await fetch('/api/parse', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                contents: [{
-                    parts: [
-                        { text: "Extract ONLY shifts marked for 'מודיעין'. Return ONLY a JSON array of objects with keys 'day' (ראשון/שני/שלישי/רביעי) and 'type' (e.g. ש.ג 08:00, מטבח בוקר, נשקייה)." },
-                        { inline_data: { mime_type: "image/jpeg", data: base64Data } }
-                    ]
-                }]
+                image: compressedBase64,
+                apiKey: apiKey
             })
         });
 
-        if (!response.ok) throw new Error('שגיאה בהתקשרות ל-API');
+        const resData = await response.json();
 
-        const data = await response.json();
-        const replyText = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
-        const jsonMatch = replyText.match(/\[.*\]/s);
-
-        if (jsonMatch) {
-            const parsedShifts = JSON.parse(jsonMatch[0]);
-            state.shifts = parsedShifts.map(s => ({ ...s, assigned: "", locked: false }));
+        if (response.ok && resData.shifts) {
+            state.shifts = resData.shifts.map(s => ({ ...s, assigned: "", locked: false }));
             renderShifts();
             alert('התמונה פוענחה בהצלחה!');
         } else {
-            alert('לא זוהו תורנויות מודיעין בתמונה. ניתן להוסיף תורנויות ידנית.');
+            alert('לא זוהו תורנויות מודיעין בתמונה, או שהמפתח לא תקין. נסה שוב או הוסף ידנית.');
         }
     } catch (err) {
         console.error(err);
-        alert('התרחשה שגיאה בתהליך הפענוח. נסה שוב או הוסף תורנויות ידנית.');
+        alert('התרחשה שגיאה בתקשורת מול השרת. כנס להגדרות ווודא שה-API Key תקין.');
     } finally {
         showLoading(false);
-        e.target.value = ''; // Reset file input
+        e.target.value = '';
     }
 }
 
